@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import "font-awesome/css/font-awesome.min.css";
 
 const generateHoverColor = (id) => {
@@ -17,23 +16,30 @@ const App = () => {
   const [colors, setColors] = useState({});
 
   useEffect(() => {
-    axios.get("http://localhost:3000/cards").then((res) => {
-      setAzkar(res.data);
+    fetch("/azkar.txt")
+      .then((res) => res.text())
+      .then((text) => {
+        // نستخرج cards من الـ JSON
+        const json = JSON.parse(text);
+        const data = json.cards;  
 
-      const initialCounts = {};
-      const initialColors = {};
-      const initialHoverColors = {};
+        setAzkar(data);
 
-      res.data.forEach((item) => {
-        initialCounts[item.id] = item.count;
-        initialColors[item.id] = item.backgroundColor;
-        initialHoverColors[item.id] = generateHoverColor(item.id);
-      });
+        const initialCounts = {};
+        const initialColors = {};
+        const initialHoverColors = {};
 
-      setCounts(initialCounts);
-      setColors(initialColors);
-      setHoverColors(initialHoverColors);
-    });
+        data.forEach((item) => {
+          initialCounts[item.id] = item.count;
+          initialColors[item.id] = item.backgroundColor;
+          initialHoverColors[item.id] = generateHoverColor(item.id);
+        });
+
+        setCounts(initialCounts);
+        setColors(initialColors);
+        setHoverColors(initialHoverColors);
+      })
+      .catch((err) => console.error("Error loading azkar.txt:", err));
   }, []);
 
   const handleDecrement = (id) => {
@@ -68,7 +74,6 @@ const App = () => {
   return (
     <div>
       <h1 className="text-center text-3xl font-bold p-6">أذكار المسلم</h1>
-
       <div
         style={{
           display: "flex",
@@ -104,11 +109,8 @@ const App = () => {
             <div style={{ fontSize: "2rem", marginBottom: "10px" }}>
               {item.title}
             </div>
-
             <div style={{ fontSize: "2rem" }}>{counts[item.id]}</div>
-
             <div style={{ fontSize: "2rem", opacity: 0.8 }}>{item.count}</div>
-
             <div
               onClick={(e) => handleReset(e, item.id, item.count)}
               style={{ fontSize: "1.5rem", marginTop: "10px" }}
@@ -123,3 +125,4 @@ const App = () => {
 };
 
 export default App;
+
